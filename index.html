@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>心迹戒指 · 设备页原型</title>
+  <style>
+    :root {
+      --xinji-canvas: #fbfaf6;
+      --xinji-canvas-warm: #f7f4ef;
+      --xinji-surface: rgba(255, 255, 252, 0.92);
+      --xinji-surface-soft: rgba(255, 255, 252, 0.74);
+      --xinji-border: rgba(226, 220, 211, 0.72);
+      --xinji-border-strong: rgba(204, 193, 183, 0.54);
+      --xinji-text: #2f2930;
+      --xinji-text-soft: #77716b;
+      --xinji-text-faint: #aaa39b;
+      --xinji-pink: #f3e7ec;
+      --xinji-rose: #d9a7bd;
+      --xinji-lavender: #d7c9ea;
+      --xinji-lilac-soft: #f3eff8;
+      --xinji-cyan: #d8ecee;
+      --xinji-mint: #bdd8d0;
+      --xinji-gold-soft: #eee0c8;
+      --xinji-action-fill: #e8dbe8;
+      --xinji-shadow: 0 18px 55px rgba(69, 58, 45, 0.08);
+      --xinji-shadow-soft: 0 10px 32px rgba(90, 74, 63, 0.06);
+      --xinji-radius-lg: 24px;
+      --xinji-radius-md: 18px;
+      --xinji-radius-sm: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "PingFang SC", "Microsoft YaHei", ui-sans-serif, system-ui, sans-serif;
+      color: var(--xinji-text);
+      background:
+        radial-gradient(circle at 12% 8%, rgba(234, 213, 222, 0.22), transparent 26%),
+        radial-gradient(circle at 86% 14%, rgba(155, 221, 234, 0.18), transparent 28%),
+        linear-gradient(135deg, var(--xinji-canvas), var(--xinji-canvas-warm));
+    }
+
+    .shell {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 28px 18px;
+    }
+
+    .phone {
+      width: 390px;
+      min-height: 844px;
+      border-radius: 42px;
+      padding: 18px 16px 98px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 253, 0.96), rgba(248, 244, 239, 0.98)),
+        radial-gradient(circle at top right, rgba(216, 236, 238, 0.55), transparent 26%);
+      border: 1px solid rgba(233, 227, 219, 0.96);
+      box-shadow:
+        0 24px 60px rgba(97, 84, 72, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.86);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .status-bar,
+    .header,
+    .section,
+    .list-card,
+    .help-card,
+    .device-card,
+    .metrics-grid {
+      position: relative;
+      z-index: 1;
+    }
+
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 8px 14px;
+      font-size: 13px;
+      color: var(--xinji-text-soft);
+    }
+
+    .status-icons {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .battery {
+      padding: 2px 7px;
+      border-radius: 999px;
+      border: 1px solid var(--xinji-border);
+      background: rgba(255, 255, 255, 0.7);
+      font-size: 11px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 4px 14px;
+    }
+
+    .header-copy small {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--xinji-text-faint);
+      letter-spacing: 0.16em;
+      font-size: 11px;
+    }
+
+    .header-copy h1 {
+      margin: 0;
+      font-family: "Songti SC", "Noto Serif SC", Georgia, serif;
+      font-size: 29px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .icon-button {
+      width: 42px;
+      height: 42px;
+      border: 1px solid var(--xinji-border);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.76);
+      color: #665f58;
+      box-shadow: var(--xinji-shadow-soft);
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+    }
+
+    .content {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .screen {
+      display: none;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    .device-card,
+    .list-card,
+    .help-card {
+      border: 1px solid var(--xinji-border);
+      border-radius: var(--xinji-radius-lg);
+      background: var(--xinji-surface);
+      box-shadow: var(--xinji-shadow-soft);
+    }
+
+    .device-card {
+      padding: 18px;
+      background:
+        linear-gradient(135deg, rgba(255, 255, 252, 0.96), rgba(243, 239, 248, 0.82)),
+        radial-gradient(circle at 86% 15%, rgba(216, 236, 238, 0.62), transparent 36%);
+    }
+
+    .eyebrow {
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      color: var(--xinji-text-faint);
+      margin-bottom: 10px;
+    }
+
+    .device-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .ring-stack {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .ring-visual {
+      width: 112px;
+      height: 112px;
+      flex: 0 0 112px;
+      position: relative;
+      display: grid;
+      place-items: center;
+    }
+
+    .ring-visual::before {
+      content: "";
+      width: 92px;
+      height: 92px;
+      border-radius: 50%;
+      background:
+        linear-gradient(135deg, #e9dccd 0%, #c9b39b 28%, #8d745e 52%, #f3ebe1 76%, #bfa58a 100%);
+      box-shadow:
+        inset -10px -12px 18px rgba(111, 89, 68, 0.18),
+        inset 10px 12px 18px rgba(255, 248, 240, 0.72),
+        0 20px 28px rgba(118, 96, 74, 0.14);
+      transform: perspective(160px) rotate(-20deg);
+      display: block;
+    }
+
+    .ring-visual::after {
+      content: "";
+      position: absolute;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 35% 32%, rgba(71, 60, 51, 0.35), transparent 24%),
+        linear-gradient(145deg, #57473d, #1b1714 55%, #6f5e51 100%);
+      box-shadow:
+        0 0 0 8px rgba(246, 240, 233, 0.88),
+        inset 6px 8px 12px rgba(255, 255, 255, 0.08);
+      transform: translateY(1px) perspective(160px) rotate(-20deg);
+    }
+
+    .ring-copy h2 {
+      margin: 0 0 6px;
+      font-size: 22px;
+      font-weight: 600;
+    }
+
+    .ring-copy p {
+      margin: 0;
+      color: var(--xinji-text-soft);
+      font-size: 13px;
+    }
+
+    .signal-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 12px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.84);
+      border: 1px solid rgba(203, 231, 223, 0.88);
+      color: #59796f;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .status-inline {
+      margin-top: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 16px;
+      color: var(--xinji-text-soft);
+      font-size: 13px;
+    }
+
+    .status-inline strong {
+      color: var(--xinji-text);
+      font-weight: 600;
+    }
+
+    .device-meta {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .meta-chip {
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.74);
+      border: 1px solid rgba(230, 224, 216, 0.92);
+    }
+
+    .meta-chip span {
+      display: block;
+      color: var(--xinji-text-faint);
+      font-size: 11px;
+      margin-bottom: 6px;
+    }
+
+    .meta-chip strong {
+      font-size: 13px;
+      color: var(--xinji-text);
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 4px 4px 0;
+    }
+
+    .section-head h3 {
+      margin: 0;
+      font-family: "Songti SC", "Noto Serif SC", Georgia, serif;
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .section-head a {
+      color: var(--xinji-text-soft);
+      text-decoration: none;
+      font-size: 13px;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .metric-card {
+      padding: 15px 14px;
+      border-radius: var(--xinji-radius-md);
+      background: var(--xinji-surface-soft);
+      border: 1px solid var(--xinji-border);
+      box-shadow: var(--xinji-shadow-soft);
+    }
+
+    .metric-card .icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-size: 16px;
+      margin-bottom: 12px;
+    }
+
+    .icon.cyan { background: rgba(216, 236, 238, 0.8); }
+    .icon.pink { background: rgba(243, 231, 236, 0.82); }
+    .icon.gold { background: rgba(238, 224, 200, 0.82); }
+    .icon.mint { background: rgba(189, 216, 208, 0.82); }
+
+    .metric-card strong {
+      display: block;
+      font-size: 15px;
+      margin-bottom: 4px;
+    }
+
+    .metric-card span {
+      display: block;
+      color: var(--xinji-text-soft);
+      font-size: 12px;
+    }
+
+    .list-card {
+      padding: 8px 0;
+      overflow: hidden;
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 18px;
+    }
+
+    .row + .row {
+      border-top: 1px solid rgba(229, 223, 214, 0.76);
+    }
+
+    .row-copy strong {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 15px;
+    }
+
+    .row-copy span {
+      display: block;
+      color: var(--xinji-text-soft);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .tag {
+      min-width: 74px;
+      padding: 8px 10px;
+      text-align: center;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #7e656c;
+      background: var(--xinji-pink);
+    }
+
+    .tag.warning {
+      background: #f6ece0;
+      color: #9a6d45;
+    }
+
+    .tag.good {
+      background: rgba(218, 239, 232, 0.88);
+      color: #4f796b;
+    }
+
+    .tag.neutral {
+      background: rgba(243, 239, 248, 0.92);
+      color: #6f6780;
+    }
+
+    .help-card {
+      padding: 10px 0;
+    }
+
+    .assist-note {
+      margin: 2px 4px 0;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.86), rgba(216,236,238,0.42));
+      border: 1px solid rgba(223, 230, 228, 0.82);
+      color: #6c6761;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .bottom-nav {
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      bottom: 18px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 10px;
+      border-radius: 24px;
+      border: 1px solid rgba(226, 220, 211, 0.9);
+      background: rgba(255, 255, 252, 0.88);
+      box-shadow:
+        0 14px 32px rgba(90, 74, 63, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.82);
+      backdrop-filter: blur(12px);
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-height: 52px;
+      border-radius: 18px;
+      color: var(--xinji-text-soft);
+      font-size: 14px;
+      font-weight: 600;
+      background: transparent;
+      border: 0;
+    }
+
+    .nav-item .nav-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 11px;
+      display: grid;
+      place-items: center;
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid rgba(226, 220, 211, 0.82);
+      font-size: 15px;
+    }
+
+    .nav-item.active {
+      color: var(--xinji-text);
+      background: linear-gradient(135deg, rgba(255,255,255,0.96), rgba(243,239,248,0.92));
+      box-shadow: 0 12px 26px rgba(80, 67, 53, 0.08);
+    }
+
+    .nav-item.active .nav-icon {
+      background: linear-gradient(135deg, rgba(216, 236, 238, 0.95), rgba(243, 231, 236, 0.92));
+    }
+
+    .home-indicator {
+      width: 132px;
+      height: 5px;
+      border-radius: 999px;
+      background: rgba(57, 46, 41, 0.82);
+      margin: 12px auto 0;
+      opacity: 0.9;
+    }
+
+    @media (max-width: 430px) {
+      .shell {
+        padding: 0;
+      }
+
+      .phone {
+        width: 100vw;
+        min-height: 100vh;
+        border-radius: 0;
+        padding-bottom: 30px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <main class="phone">
+      <div class="status-bar">
+        <strong>9:41</strong>
+        <div class="status-icons">
+          <span>◔◔◔</span>
+          <span>⌁</span>
+          <span class="battery">62%</span>
+        </div>
+      </div>
+
+      <div class="content">
+        <section class="screen active" id="device-screen" aria-labelledby="device-title">
+          <header class="header">
+            <div class="header-copy">
+              <small>DEVICE OVERVIEW</small>
+              <h1 id="device-title">我的戒指</h1>
+            </div>
+            <button class="icon-button" aria-label="设备更多">⌁</button>
+          </header>
+
+          <article class="device-card">
+            <div class="eyebrow">RING STATUS</div>
+            <div class="device-top">
+              <div class="ring-stack">
+                <div class="ring-visual" aria-hidden="true"></div>
+                <div class="ring-copy">
+                  <h2>心迹首轮</h2>
+                  <p>钛金版 · 右手食指</p>
+                  <div class="signal-pill">● 已连接</div>
+                  <div class="status-inline">
+                    <span><strong>62%</strong> 电量</span>
+                    <span>续航约 4 天</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="device-meta">
+              <div class="meta-chip">
+                <span>最近同步</span>
+                <strong>10 分钟前</strong>
+              </div>
+              <div class="meta-chip">
+                <span>连接质量</span>
+                <strong>稳定</strong>
+              </div>
+              <div class="meta-chip">
+                <span>固件版本</span>
+                <strong>v1.8.3</strong>
+              </div>
+            </div>
+
+          </article>
+
+          <div class="section-head">
+            <h3>当前提醒</h3>
+            <a href="#">状态历史</a>
+          </div>
+
+          <section class="list-card">
+            <div class="row">
+              <div class="row-copy">
+                <strong>蓝牙连接稳定</strong>
+                <span>过去 24 小时无断连，数据同步保持顺畅。</span>
+              </div>
+              <div class="tag good">正常</div>
+            </div>
+            <div class="row">
+              <div class="row-copy">
+                <strong>电量可支持 4 天陪伴</strong>
+                <span>当前无需充电，预计本周内状态稳定。</span>
+              </div>
+              <div class="tag neutral">续航中</div>
+            </div>
+            <div class="row">
+              <div class="row-copy">
+                <strong>检测到可选固件更新</strong>
+                <span>建议在电量高于 50% 时完成升级。</span>
+              </div>
+              <div class="tag warning">待处理</div>
+            </div>
+          </section>
+
+          <div class="assist-note">
+            设备页现在只保留戒指当前状态，帮助、权限与采集相关设置已收进设置页。
+          </div>
+        </section>
+
+        <section class="screen" id="settings-screen" aria-labelledby="settings-title">
+          <header class="header">
+            <div class="header-copy">
+              <small>SETTINGS</small>
+              <h1 id="settings-title">设置</h1>
+            </div>
+            <button class="icon-button" aria-label="设置更多">⋯</button>
+          </header>
+
+          <div class="section-head">
+            <h3>佩戴与采集</h3>
+            <a href="#">管理</a>
+          </div>
+
+          <section class="metrics-grid">
+            <article class="metric-card">
+              <div class="icon cyan">◌</div>
+              <strong>佩戴稳定</strong>
+              <span>贴合良好，日间信号连续</span>
+            </article>
+            <article class="metric-card">
+              <div class="icon pink">☾</div>
+              <strong>夜间完成度 92%</strong>
+              <span>睡眠采集完整，可生成分析</span>
+            </article>
+            <article class="metric-card">
+              <div class="icon gold">↻</div>
+              <strong>采集质量 良好</strong>
+              <span>心率与活动数据波形稳定</span>
+            </article>
+            <article class="metric-card">
+              <div class="icon mint">⌁</div>
+              <strong>充电正常</strong>
+              <span>近 7 天无异常掉电记录</span>
+            </article>
+          </section>
+
+          <div class="section-head">
+            <h3>设备信息</h3>
+            <a href="#">更多设置</a>
+          </div>
+
+          <section class="list-card">
+            <div class="row">
+              <div class="row-copy">
+                <strong>绑定状态</strong>
+                <span>已绑定当前账号与微信陪伴档案</span>
+              </div>
+              <span>›</span>
+            </div>
+            <div class="row">
+              <div class="row-copy">
+                <strong>数据权限</strong>
+                <span>蓝牙、通知、健康数据权限均已开启</span>
+              </div>
+              <span>›</span>
+            </div>
+            <div class="row">
+              <div class="row-copy">
+                <strong>采集频率</strong>
+                <span>标准模式，优先平衡续航与完整度</span>
+              </div>
+              <span>›</span>
+            </div>
+          </section>
+
+          <div class="section-head">
+            <h3>帮助与支持</h3>
+            <a href="#">联系售后</a>
+          </div>
+
+          <section class="help-card">
+            <div class="row">
+              <div class="row-copy">
+                <strong>佩戴指南</strong>
+                <span>查看尺寸、佩戴姿势与日常保养建议</span>
+              </div>
+              <span>›</span>
+            </div>
+            <div class="row">
+              <div class="row-copy">
+                <strong>连接帮助</strong>
+                <span>排查蓝牙连接、同步延迟与权限问题</span>
+              </div>
+              <span>›</span>
+            </div>
+            <div class="row">
+              <div class="row-copy">
+                <strong>固件更新</strong>
+                <span>当前有可选更新包，优化夜间采集稳定性</span>
+              </div>
+              <span>›</span>
+            </div>
+          </section>
+        </section>
+      </div>
+
+      <nav class="bottom-nav" aria-label="底部导航">
+        <button class="nav-item active" aria-current="page" data-target="device-screen" type="button">
+          <span class="nav-icon">◌</span>
+          <span>设备</span>
+        </button>
+        <button class="nav-item" data-target="settings-screen" type="button">
+          <span class="nav-icon">⚙</span>
+          <span>设置</span>
+        </button>
+      </nav>
+
+      <div class="home-indicator"></div>
+    </main>
+  </div>
+  <script>
+    const navItems = document.querySelectorAll(".nav-item");
+    const screens = document.querySelectorAll(".screen");
+
+    navItems.forEach((item) => {
+      item.addEventListener("click", () => {
+        const targetId = item.dataset.target;
+
+        navItems.forEach((nav) => {
+          nav.classList.remove("active");
+          nav.removeAttribute("aria-current");
+        });
+
+        screens.forEach((screen) => {
+          screen.classList.remove("active");
+        });
+
+        item.classList.add("active");
+        item.setAttribute("aria-current", "page");
+        document.getElementById(targetId).classList.add("active");
+      });
+    });
+  </script>
+</body>
+</html>
