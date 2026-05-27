@@ -55,7 +55,7 @@
 
     .phone {
       width: 390px;
-      min-height: 844px;
+      height: 844px;
       border-radius: 42px;
       padding: 18px 16px 98px;
       background:
@@ -140,19 +140,30 @@
     }
 
     .content {
+      height: calc(100% - 34px);
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      overflow: hidden;
     }
 
     .screen {
       display: none;
       flex-direction: column;
       gap: 14px;
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding-bottom: 10px;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
     }
 
     .screen.active {
       display: flex;
+    }
+
+    .screen::-webkit-scrollbar {
+      display: none;
     }
 
     .device-card,
@@ -162,6 +173,17 @@
       border-radius: var(--xinji-radius-lg);
       background: var(--xinji-surface);
       box-shadow: var(--xinji-shadow-soft);
+    }
+
+    .expand-button {
+      width: 100%;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      text-align: inherit;
+      font: inherit;
+      color: inherit;
+      cursor: pointer;
     }
 
     .device-card {
@@ -298,6 +320,22 @@
       color: var(--xinji-text);
     }
 
+    .meta-chip.expand-button {
+      text-align: left;
+    }
+
+    .meta-chip.expand-button::after {
+      content: "展开";
+      display: block;
+      margin-top: 8px;
+      color: var(--xinji-text-faint);
+      font-size: 11px;
+    }
+
+    .meta-chip.expand-button.expanded::after {
+      content: "收起";
+    }
+
     .section-head {
       display: flex;
       justify-content: space-between;
@@ -366,7 +404,7 @@
 
     .row {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: space-between;
       gap: 12px;
       padding: 16px 18px;
@@ -376,10 +414,28 @@
       border-top: 1px solid rgba(229, 223, 214, 0.76);
     }
 
+    .row-item {
+      padding: 0;
+    }
+
+    .row-item + .row-item {
+      border-top: 1px solid rgba(229, 223, 214, 0.76);
+    }
+
+    .row-item > .row {
+      border-top: 0;
+    }
+
+    .row-copy {
+      flex: 1;
+      min-width: 0;
+    }
+
     .row-copy strong {
       display: block;
       margin-bottom: 5px;
       font-size: 15px;
+      line-height: 1.25;
     }
 
     .row-copy span {
@@ -389,7 +445,46 @@
       line-height: 1.4;
     }
 
+    .row-arrow {
+      align-self: center;
+      flex: 0 0 auto;
+      color: var(--xinji-text-faint);
+      font-size: 16px;
+      transition: transform 180ms ease;
+    }
+
+    .expand-button.expanded .row-arrow {
+      transform: rotate(90deg);
+    }
+
+    .expand-panel {
+      display: none;
+      padding: 0 18px 16px;
+      color: var(--xinji-text-soft);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .expand-panel.open {
+      display: block;
+    }
+
+    .expand-panel strong {
+      color: var(--xinji-text);
+      font-size: 12px;
+    }
+
+    .detail-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 6px;
+    }
+
     .tag {
+      align-self: center;
+      flex: 0 0 auto;
       min-width: 74px;
       padding: 8px 10px;
       text-align: center;
@@ -419,15 +514,178 @@
       padding: 10px 0;
     }
 
-    .assist-note {
-      margin: 2px 4px 0;
-      padding: 14px 16px;
-      border-radius: 18px;
-      background: linear-gradient(135deg, rgba(255,255,255,0.86), rgba(216,236,238,0.42));
-      border: 1px solid rgba(223, 230, 228, 0.82);
-      color: #6c6761;
+    .service-button {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      width: 100%;
+      padding: 18px;
+      border: 0;
+      background: transparent;
+      text-align: left;
+      font: inherit;
+      color: inherit;
+      cursor: pointer;
+    }
+
+    .service-button .row-copy strong {
+      margin-bottom: 6px;
+    }
+
+    .service-badge {
+      flex: 0 0 auto;
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, rgba(243, 231, 236, 0.96), rgba(216, 236, 238, 0.92));
+      color: #6d6273;
+      font-size: 20px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+    }
+
+    .chat-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 4;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 22px 14px 28px;
+      background: rgba(78, 68, 60, 0.18);
+      backdrop-filter: blur(10px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 180ms ease;
+    }
+
+    .chat-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .chat-sheet {
+      width: 100%;
+      border-radius: 30px;
+      border: 1px solid rgba(231, 224, 216, 0.96);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 253, 0.98), rgba(247, 243, 238, 0.98)),
+        radial-gradient(circle at top right, rgba(216, 236, 238, 0.42), transparent 34%);
+      box-shadow: 0 26px 60px rgba(79, 67, 58, 0.18);
+      overflow: hidden;
+      transform: translateY(26px);
+      transition: transform 220ms ease;
+    }
+
+    .chat-overlay.open .chat-sheet {
+      transform: translateY(0);
+    }
+
+    .chat-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 18px 14px;
+    }
+
+    .chat-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .chat-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, rgba(243, 231, 236, 0.98), rgba(216, 236, 238, 0.94));
+      color: #6b6271;
+      font-size: 18px;
+    }
+
+    .chat-title strong {
+      display: block;
+      font-size: 16px;
+    }
+
+    .chat-title span {
+      display: block;
+      margin-top: 3px;
       font-size: 12px;
-      line-height: 1.5;
+      color: var(--xinji-text-soft);
+    }
+
+    .close-button {
+      width: 34px;
+      height: 34px;
+      border: 0;
+      border-radius: 999px;
+      background: rgba(248, 244, 239, 0.92);
+      color: var(--xinji-text-soft);
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    .chat-body {
+      padding: 0 18px 18px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .chat-bubble {
+      max-width: 86%;
+      padding: 12px 14px;
+      border-radius: 18px;
+      font-size: 13px;
+      line-height: 1.55;
+      box-shadow: var(--xinji-shadow-soft);
+    }
+
+    .chat-bubble.service {
+      justify-self: flex-start;
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid rgba(230, 224, 215, 0.96);
+    }
+
+    .chat-bubble.user {
+      justify-self: flex-end;
+      background: rgba(243, 231, 236, 0.92);
+      color: #6d5561;
+    }
+
+    .chat-input {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 2px;
+      padding: 10px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.88);
+      border: 1px solid rgba(230, 224, 215, 0.92);
+    }
+
+    .chat-input span {
+      flex: 1;
+      min-width: 0;
+      color: var(--xinji-text-faint);
+      font-size: 12px;
+    }
+
+    .send-button {
+      min-width: 78px;
+      padding: 10px 14px;
+      border: 0;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #e7d7e4, #d7eaec);
+      color: #5d5562;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
     }
 
     .bottom-nav {
@@ -499,9 +757,8 @@
 
       .phone {
         width: 100vw;
-        min-height: 100vh;
+        height: 100vh;
         border-radius: 0;
-        padding-bottom: 30px;
       }
     }
   </style>
@@ -546,54 +803,123 @@
             </div>
 
             <div class="device-meta">
-              <div class="meta-chip">
+              <button class="meta-chip expand-button" type="button" data-expand="sync-detail" aria-expanded="false">
                 <span>最近同步</span>
                 <strong>10 分钟前</strong>
-              </div>
-              <div class="meta-chip">
+              </button>
+              <button class="meta-chip expand-button" type="button" data-expand="signal-detail" aria-expanded="false">
                 <span>连接质量</span>
                 <strong>稳定</strong>
-              </div>
-              <div class="meta-chip">
+              </button>
+              <button class="meta-chip expand-button" type="button" data-expand="firmware-detail" aria-expanded="false">
                 <span>固件版本</span>
                 <strong>v1.8.3</strong>
-              </div>
+              </button>
+            </div>
+
+            <div class="expand-panel" id="sync-detail">
+              <strong>同步详情</strong>
+              <ul class="detail-list">
+                <li>上次完整同步：今天 21:31</li>
+                <li>同步时长：18 秒</li>
+                <li>本日同步成功率：100%</li>
+              </ul>
+            </div>
+            <div class="expand-panel" id="signal-detail">
+              <strong>连接详情</strong>
+              <ul class="detail-list">
+                <li>蓝牙信号强度：-61 dBm</li>
+                <li>过去 24 小时断连次数：0 次</li>
+                <li>当前连接环境：室内稳定</li>
+              </ul>
+            </div>
+            <div class="expand-panel" id="firmware-detail">
+              <strong>固件详情</strong>
+              <ul class="detail-list">
+                <li>当前版本：v1.8.3</li>
+                <li>发布时间：2026.05.16</li>
+                <li>更新内容：优化夜间采集与断连恢复</li>
+              </ul>
             </div>
 
           </article>
 
           <div class="section-head">
-            <h3>当前提醒</h3>
-            <a href="#">状态历史</a>
+            <h3>健康数据</h3>
+            <a href="#">查看更多</a>
           </div>
 
           <section class="list-card">
-            <div class="row">
-              <div class="row-copy">
-                <strong>蓝牙连接稳定</strong>
-                <span>过去 24 小时无断连，数据同步保持顺畅。</span>
+            <div class="row-item">
+              <button class="row expand-button" type="button" data-expand="health-1" aria-expanded="false">
+                <div class="row-copy">
+                  <strong>心率</strong>
+                  <span>静息心率 68 bpm，今日波动平稳。</span>
+                </div>
+                <div class="tag good">已采集</div>
+              </button>
+              <div class="expand-panel" id="health-1">
+                <strong>详细信息</strong>
+                <ul class="detail-list">
+                  <li>静息心率：68 bpm</li>
+                  <li>今日平均心率：76 bpm</li>
+                  <li>最高心率：118 bpm，出现在 18:24</li>
+                </ul>
               </div>
-              <div class="tag good">正常</div>
             </div>
-            <div class="row">
-              <div class="row-copy">
-                <strong>电量可支持 4 天陪伴</strong>
-                <span>当前无需充电，预计本周内状态稳定。</span>
+            <div class="row-item">
+              <button class="row expand-button" type="button" data-expand="health-2" aria-expanded="false">
+                <div class="row-copy">
+                  <strong>睡眠</strong>
+                  <span>昨晚睡眠 7 小时 18 分，深睡 1 小时 42 分。</span>
+                </div>
+                <div class="tag neutral">已更新</div>
+              </button>
+              <div class="expand-panel" id="health-2">
+                <strong>详细信息</strong>
+                <ul class="detail-list">
+                  <li>总睡眠：7 小时 18 分</li>
+                  <li>深睡：1 小时 42 分</li>
+                  <li>入睡时间：23:41，醒来时间：07:06</li>
+                </ul>
               </div>
-              <div class="tag neutral">续航中</div>
             </div>
-            <div class="row">
-              <div class="row-copy">
-                <strong>检测到可选固件更新</strong>
-                <span>建议在电量高于 50% 时完成升级。</span>
+            <div class="row-item">
+              <button class="row expand-button" type="button" data-expand="health-3" aria-expanded="false">
+                <div class="row-copy">
+                  <strong>步数</strong>
+                  <span>今日已记录 8,246 步，活动量中等。</span>
+                </div>
+                <div class="tag good">同步中</div>
+              </button>
+              <div class="expand-panel" id="health-3">
+                <strong>详细信息</strong>
+                <ul class="detail-list">
+                  <li>当前步数：8,246</li>
+                  <li>活跃时长：63 分钟</li>
+                  <li>距离目标 10,000 步还差 1,754 步</li>
+                </ul>
               </div>
-              <div class="tag warning">待处理</div>
+            </div>
+            <div class="row-item">
+              <button class="row expand-button" type="button" data-expand="health-4" aria-expanded="false">
+                <div class="row-copy">
+                  <strong>经期</strong>
+                  <span>当前周期第 12 天，预计 3 天后进入黄体期。</span>
+                </div>
+                <div class="tag warning">预测中</div>
+              </button>
+              <div class="expand-panel" id="health-4">
+                <strong>详细信息</strong>
+                <ul class="detail-list">
+                  <li>当前周期：第 12 天</li>
+                  <li>预计排卵窗口：5 月 30 日至 6 月 1 日</li>
+                  <li>本周期数据基于近 3 个月趋势估算</li>
+                </ul>
+              </div>
             </div>
           </section>
 
-          <div class="assist-note">
-            设备页现在只保留戒指当前状态，帮助、权限与采集相关设置已收进设置页。
-          </div>
         </section>
 
         <section class="screen" id="settings-screen" aria-labelledby="settings-title">
@@ -606,31 +932,43 @@
           </header>
 
           <div class="section-head">
-            <h3>佩戴与采集</h3>
-            <a href="#">管理</a>
+            <h3>账号信息</h3>
+            <a href="#">编辑</a>
           </div>
 
-          <section class="metrics-grid">
-            <article class="metric-card">
-              <div class="icon cyan">◌</div>
-              <strong>佩戴稳定</strong>
-              <span>贴合良好，日间信号连续</span>
-            </article>
-            <article class="metric-card">
-              <div class="icon pink">☾</div>
-              <strong>夜间完成度 92%</strong>
-              <span>睡眠采集完整，可生成分析</span>
-            </article>
-            <article class="metric-card">
-              <div class="icon gold">↻</div>
-              <strong>采集质量 良好</strong>
-              <span>心率与活动数据波形稳定</span>
-            </article>
-            <article class="metric-card">
-              <div class="icon mint">⌁</div>
-              <strong>充电正常</strong>
-              <span>近 7 天无异常掉电记录</span>
-            </article>
+          <section class="list-card">
+            <div class="row-item">
+              <button class="row expand-button" type="button" data-expand="account-1" aria-expanded="false">
+                <div class="row-copy">
+                  <strong>账号</strong>
+                  <span>rz0007x-lang</span>
+                </div>
+                <span class="row-arrow">›</span>
+              </button>
+              <div class="expand-panel" id="account-1">
+                <ul class="detail-list">
+                  <li>账号 ID：rz0007x-lang</li>
+                  <li>绑定方式：GitHub / 微信</li>
+                  <li>最近登录：今天 21:42</li>
+                </ul>
+              </div>
+            </div>
+            <div class="row-item">
+              <button class="row expand-button" type="button" data-expand="account-2" aria-expanded="false">
+                <div class="row-copy">
+                  <strong>昵称</strong>
+                  <span>心迹用户</span>
+                </div>
+                <span class="row-arrow">›</span>
+              </button>
+              <div class="expand-panel" id="account-2">
+                <ul class="detail-list">
+                  <li>当前昵称：心迹用户</li>
+                  <li>最近修改：2026.05.27</li>
+                  <li>昵称将同步显示在陪伴档案中</li>
+                </ul>
+              </div>
+            </div>
           </section>
 
           <div class="section-head">
@@ -639,57 +977,102 @@
           </div>
 
           <section class="list-card">
-            <div class="row">
-              <div class="row-copy">
-                <strong>绑定状态</strong>
-                <span>已绑定当前账号与微信陪伴档案</span>
+            <div class="row-item">
+              <button class="row expand-button" type="button" data-expand="settings-1" aria-expanded="false">
+                <div class="row-copy">
+                  <strong>绑定状态</strong>
+                  <span>已绑定当前账号与微信陪伴档案</span>
+                </div>
+                <span class="row-arrow">›</span>
+              </button>
+              <div class="expand-panel" id="settings-1">
+                <ul class="detail-list">
+                  <li>绑定账号：rz0007x-lang</li>
+                  <li>绑定时间：2026.05.27 18:42</li>
+                  <li>微信陪伴档案：已同步</li>
+                </ul>
               </div>
-              <span>›</span>
             </div>
-            <div class="row">
-              <div class="row-copy">
-                <strong>数据权限</strong>
-                <span>蓝牙、通知、健康数据权限均已开启</span>
+            <div class="row-item">
+              <button class="row expand-button" type="button" data-expand="settings-2" aria-expanded="false">
+                <div class="row-copy">
+                  <strong>数据权限</strong>
+                  <span>蓝牙、通知、健康数据权限均已开启</span>
+                </div>
+                <span class="row-arrow">›</span>
+              </button>
+              <div class="expand-panel" id="settings-2">
+                <ul class="detail-list">
+                  <li>蓝牙权限：已允许</li>
+                  <li>健康数据读取：已允许</li>
+                  <li>后台刷新：已开启</li>
+                </ul>
               </div>
-              <span>›</span>
             </div>
-            <div class="row">
-              <div class="row-copy">
-                <strong>采集频率</strong>
-                <span>标准模式，优先平衡续航与完整度</span>
+            <div class="row-item">
+              <button class="row expand-button" type="button" data-expand="settings-3" aria-expanded="false">
+                <div class="row-copy">
+                  <strong>采集频率</strong>
+                  <span>标准模式，优先平衡续航与完整度</span>
+                </div>
+                <span class="row-arrow">›</span>
+              </button>
+              <div class="expand-panel" id="settings-3">
+                <ul class="detail-list">
+                  <li>当前模式：标准</li>
+                  <li>夜间采集：高精度</li>
+                  <li>低电量时将自动降频</li>
+                </ul>
               </div>
-              <span>›</span>
             </div>
           </section>
 
           <div class="section-head">
-            <h3>帮助与支持</h3>
-            <a href="#">联系售后</a>
+            <h3>联系小u客服</h3>
+            <a href="#" data-open-chat>打开聊天</a>
           </div>
 
           <section class="help-card">
-            <div class="row">
-              <div class="row-copy">
-                <strong>佩戴指南</strong>
-                <span>查看尺寸、佩戴姿势与日常保养建议</span>
-              </div>
-              <span>›</span>
-            </div>
-            <div class="row">
-              <div class="row-copy">
-                <strong>连接帮助</strong>
-                <span>排查蓝牙连接、同步延迟与权限问题</span>
-              </div>
-              <span>›</span>
-            </div>
-            <div class="row">
-              <div class="row-copy">
-                <strong>固件更新</strong>
-                <span>当前有可选更新包，优化夜间采集稳定性</span>
-              </div>
-              <span>›</span>
+            <div class="row-item">
+              <button class="service-button" type="button" data-open-chat>
+                <div class="row-copy">
+                  <strong>小u客服</strong>
+                  <span>帮助与支持内容已合并到客服会话，点击后直接打开聊天框处理连接、售后和使用问题</span>
+                </div>
+                <span class="service-badge">u</span>
+              </button>
             </div>
           </section>
+        </section>
+      </div>
+
+      <div class="chat-overlay" id="chatOverlay" aria-hidden="true">
+        <section class="chat-sheet" aria-label="小u客服聊天框">
+          <div class="chat-header">
+            <div class="chat-title">
+              <div class="chat-avatar">u</div>
+              <div>
+                <strong>小u客服</strong>
+                <span>在线中 · 平均 1 分钟内回复</span>
+              </div>
+            </div>
+            <button class="close-button" type="button" data-close-chat aria-label="关闭聊天">×</button>
+          </div>
+          <div class="chat-body">
+            <div class="chat-bubble service">
+              你好，我是小u客服。戒指连接、同步异常、售后换货和佩戴问题都可以直接告诉我，我来帮你处理。
+            </div>
+            <div class="chat-bubble user">
+              我想咨询一下设备同步慢和售后保修。
+            </div>
+            <div class="chat-bubble service">
+              已收到，我先帮你排查同步状态，同时也可以继续为你登记售后服务。
+            </div>
+            <div class="chat-input" aria-label="聊天输入区域">
+              <span>输入想咨询的问题...</span>
+              <button class="send-button" type="button">发送</button>
+            </div>
+          </div>
         </section>
       </div>
 
@@ -728,6 +1111,47 @@
         item.setAttribute("aria-current", "page");
         document.getElementById(targetId).classList.add("active");
       });
+    });
+
+    const expandButtons = document.querySelectorAll("[data-expand]");
+    const chatOverlay = document.getElementById("chatOverlay");
+    const openChatButtons = document.querySelectorAll("[data-open-chat]");
+    const closeChatButtons = document.querySelectorAll("[data-close-chat]");
+
+    expandButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const targetId = button.dataset.expand;
+        const panel = document.getElementById(targetId);
+        const isOpen = panel.classList.contains("open");
+
+        panel.classList.toggle("open", !isOpen);
+        button.classList.toggle("expanded", !isOpen);
+        button.setAttribute("aria-expanded", String(!isOpen));
+      });
+    });
+
+    const setChatOpen = (isOpen) => {
+      chatOverlay.classList.toggle("open", isOpen);
+      chatOverlay.setAttribute("aria-hidden", String(!isOpen));
+    };
+
+    openChatButtons.forEach((button) => {
+      button.addEventListener("click", (event) => {
+        event.preventDefault();
+        setChatOpen(true);
+      });
+    });
+
+    closeChatButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        setChatOpen(false);
+      });
+    });
+
+    chatOverlay.addEventListener("click", (event) => {
+      if (event.target === chatOverlay) {
+        setChatOpen(false);
+      }
     });
   </script>
 </body>
